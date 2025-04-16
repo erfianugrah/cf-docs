@@ -1,0 +1,94 @@
+
+---
+title: Cloudflare Access
+author: Erfi Anugrah
+format:
+  revealjs:
+    progress: true
+    history: true
+    embed-resources: true
+    theme: dark
+    slide-number: true
+    show-slide-number: print
+    incremental: true
+    mermaid:
+      theme: forest
+---
+
+## What is Cloudflare Access?
+
+- Think of securing your SaaS or self-hosted applications using the Zero Trust principles.
+  - For e.g. using identity providers to secure access to specific parts of the application and maintaining the session instead of having a carte blanche to the entire application - think principle of least privilege
+
+## Why Cloudflare for this particular use case?
+
+- You get to leverage Cloudflare's network
+  - You would already be leveraging our layer 7 (reverse proxy) services, so on top of caching, WAF, DDoS etc, you have Access as well
+
+
+## SAML Authentication Flow with Cloudflare Access {.smaller}
+<style>
+.mermaid-container {
+  height: 550px;
+  overflow-y: auto;
+  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;  /* Internet Explorer 10+ */
+}
+.mermaid-container::-webkit-scrollbar {  /* WebKit */
+  width: 0;
+  height: 0;
+}
+</style>
+
+<div class="mermaid-container">
+
+
+```{mermaid}
+%%{init: {
+  'theme': 'base',
+  'themeVariables': {
+    'primaryColor': '#ff9800',
+    'primaryTextColor': '#ffffff',
+    'primaryBorderColor': '#ffffff',
+    'lineColor': '#ffffff',
+    'secondaryColor': '#006064',
+    'tertiaryColor': '#4caf50'
+  }
+}}%%
+
+sequenceDiagram
+    actor User
+    participant Browser
+    participant CloudflareAccess as Cloudflare Access
+    participant Application
+    participant IdentityProvider as Identity Provider
+
+    User->>Browser: Access protected resource
+    Browser->>CloudflareAccess: Request access
+    CloudflareAccess->>IdentityProvider: Initiate SAML request
+    IdentityProvider->>User: Present login page
+    User->>IdentityProvider: Enter credentials
+    IdentityProvider->>IdentityProvider: Authenticate user
+    IdentityProvider->>CloudflareAccess: Send SAML assertion
+    Note over CloudflareAccess: Validate SAML assertion
+    CloudflareAccess->>CloudflareAccess: Generate JWT
+    CloudflareAccess->>Browser: Set JWT in cookie
+    Note over Browser: Store JWT
+    Browser->>CloudflareAccess: Request resource with JWT
+    Note over CloudflareAccess: Validate JWT
+    CloudflareAccess->>CloudflareAccess: Apply access policies
+    alt Access Granted
+        CloudflareAccess->>Application: Forward request
+        Application->>CloudflareAccess: Return resource
+        CloudflareAccess->>Browser: Return protected resource
+        Browser->>User: Display resource
+    else Access Denied
+        CloudflareAccess->>Browser: Return access denied
+        Browser->>User: Show access denied message
+    end
+
+    Note over User,IdentityProvider: SAML Authentication
+    Note over User,CloudflareAccess: JWT-based Authorization
+```
+
+#  Demo {}

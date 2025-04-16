@@ -1,0 +1,82 @@
+---
+title: Magic WAN and its interops
+author: 
+  - name: Erfi Anugrah
+    affiliation:
+      - name: Cloudflare
+license: "CC BY ND"
+copyright:
+  holder: Erfi Anugrah
+format: 
+  revealjs:
+    progress: true
+    history: true
+    embed-resources: true
+    theme: dark 
+    slide-number: true
+    show-slide-number: print
+    incremental: true
+    mermaid:
+      theme: forest
+---
+
+## What is Magic WAN?
+
+- In short, using Cloudflare as an extension of your private network (even for public applications in the future) with the variety of on-ramps and off-ramps.
+
+- Think of connecting offices, remote users, data centers etc.
+
+## Why?
+
+- You get to leverage Cloudflare's network
+  - This means points of presence across the globe
+  - Single pane view and interconnects (think secure web gateway, DNS rules, network rules etc.)
+  - You can programmatically manage your infrastructure (even more so in the future when we talk about cloud connectivity)
+
+
+## How does it work?
+
+```{mermaid}
+%%| fig-width: 6.5
+%%{init: {'theme': 'dark','themeVariables': { 'lineColor': '#F8B229', 'backgroundColor': 'transparent'} }}%%
+graph LR;
+  classDef cloudflare fill:#FFA500,stroke:#333,stroke-width:2px,color:#000000;
+  subgraph Cloudflare
+    K{Cloudflare}
+    L{Cloudflare} 
+  class K,L cloudflare
+  end
+  subgraph Users
+    M[PAC File User] --> |HTTP| K
+    M --> |HTTP| L
+    N[Clientless RBI User] --> |HTTP| K
+    N --> |HTTP| L
+    F[Magic WAN User] --> |GRE or IPsec| K
+    A[WARP User] --> |QUIC or Wireguard| K
+    A --> |QUIC or Wireguard| L
+  end
+  subgraph WARP Connector   
+    L -->|QUIC or Wireguard| H[WARP Connector] <--> I[Private Service - VOIP]   
+  end
+  subgraph Magic WAN
+    K --> |GRE or IPsec| D[Magic WAN] <--> E[Private Service - File Server] 
+  end
+  subgraph Magic WAN Connector
+    K --> |GRE or IPsec| G[Magic WAN Connector] <--> J[SSH Server]
+  end
+  subgraph Cloudflare Tunnel
+    K --> |QUIC or H2| B[Cloudflare Tunnel] --> C[Private Service - CRM] 
+  end
+```
+
+::: aside
+The double ended arrows indicate bidirectional flow
+:::
+
+## Demo {.center} 
+
+## Q&A {.center}
+
+## Survey {.center}
+
+![](./qrcode.png){fig-align="center"}

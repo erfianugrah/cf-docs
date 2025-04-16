@@ -1,0 +1,32 @@
+```mermaid
+%%{init: {'theme': 'dark','themeVariables': { 'lineColor': '#F8B229', 'backgroundColor': 'transparent'} }}%%
+graph LR;
+  classDef cloudflare fill:#FFA500,stroke:#333,stroke-width:2px,color:#000000;
+  subgraph Cloudflare
+    K{Cloudflare}
+    L{Cloudflare} 
+  class K,L cloudflare
+  end
+  subgraph Users
+    M[PAC File User] --> |HTTP| K
+    M --> |HTTP| L
+    N[Clientless RBI User] --> |HTTP| K
+    N --> |HTTP| L
+    F[Magic WAN User] --> |GRE or IPsec| K
+    A[WARP User] --> |QUIC or Wireguard| K
+    A --> |QUIC or Wireguard| L
+  end
+  subgraph WARP Connector   
+    L -->|QUIC or Wireguard| H[WARP Connector] <--> I[Private Service - VOIP]   
+  end
+  subgraph Magic WAN
+    K --> |GRE or IPsec| D[Magic WAN] <--> E[Private Service - File Server] 
+  end
+  subgraph Magic WAN Connector
+    K --> |GRE or IPsec| G[Magic WAN Connector] <--> J[SSH Server]
+  end
+  subgraph Cloudflare Tunnel
+    K --> |QUIC or H2| B[Cloudflare Tunnel] --> C[Private Service - CRM] 
+  end
+```
+
